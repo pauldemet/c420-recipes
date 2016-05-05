@@ -1,0 +1,99 @@
+#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+
+echo 30000 >  /proc/sys/vm/min_free_kbytes
+
+lpadmin -p C56_Thermal_Printer -E -v "usb://C56/Thermal%20Printer?serial=<UNUSED>" -P /usr/share/cups/model/Hengstler/hengstlerc56.ppd
+
+# 5v switched control
+echo 127 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio127/direction
+
+# 12v switched control
+echo 115 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio115/direction
+
+# 24v switched control
+echo 116 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio116/direction
+
+# sellvds
+echo 2 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio2/direction
+
+# lvdden
+echo 4 > /sys/class/gpio/export
+echo high > /sys/class/gpio/gpio4/direction
+
+# lvds_bitsel
+echo 7 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio7/direction
+
+# wdi
+echo 32 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio32/direction
+
+# wdog_en_n
+echo 37 > /sys/class/gpio/export
+echo high > /sys/class/gpio/gpio37/direction
+
+# uart3_m0
+echo 43 > /sys/class/gpio/export
+echo high > /sys/class/gpio/gpio43/direction
+
+# uart3_m1
+echo 46 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio46/direction
+
+# uart3_term
+echo 36 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio36/direction
+
+# uart3_slew
+echo 41 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio41/direction
+
+# security warning#
+echo 113 > /sys/class/gpio/export
+echo in > /sys/class/gpio/gpio113/direction
+
+# pmic_int_n
+echo 171 > /sys/class/gpio/export
+echo in > /sys/class/gpio/gpio171/direction
+
+# usb_otg_oc
+echo 174 > /sys/class/gpio/export
+echo in > /sys/class/gpio/gpio174/direction
+
+# usb_hub_reset_n
+echo 175 > /sys/class/gpio/export
+echo high > /sys/class/gpio/gpio175/direction
+
+# rgmii_reset_n
+echo 191 > /sys/class/gpio/export
+echo high > /sys/class/gpio/gpio191/direction
+
+# gpio8 (out)
+echo 135 > /sys/class/gpio/export
+echo low > /sys/class/gpio/gpio135/direction
+
+# gpio9 (in)
+echo 136 > /sys/class/gpio/export
+echo in > /sys/class/gpio/gpio136/direction
+
+# toggle usb hub reset
+#echo 0 > /sys/class/gpio/gpio175/value
+#sleep 0.25
+#echo 1 > /sys/class/gpio/gpio175/value
+
+exit 0

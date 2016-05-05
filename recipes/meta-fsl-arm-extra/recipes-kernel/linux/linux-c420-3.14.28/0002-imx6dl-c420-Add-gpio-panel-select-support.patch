@@ -1,0 +1,80 @@
+From 97b1893440745b89ed011db8294b25e94c656f56 Mon Sep 17 00:00:00 2001
+From: Paul DeMetrotion <pdemetrotion@winsystems.com>
+Date: Tue, 16 Feb 2016 13:48:29 -0600
+Subject: [PATCH 2/2] imx6dl-c420 Add gpio panel select support
+
+---
+ drivers/video/mxc/ldb.c | 36 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 33 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/mxc/ldb.c b/drivers/video/mxc/ldb.c
+index 4739df7..4733e14 100644
+--- a/drivers/video/mxc/ldb.c
++++ b/drivers/video/mxc/ldb.c
+@@ -390,7 +390,7 @@ static int ldb_setup(struct mxc_dispdrv_handle *mddh,
+ 	struct ldb_chan chan;
+ 	struct device *dev = ldb->dev;
+ 	struct clk *ldb_di_parent, *ldb_di_sel, *ldb_di_sel_parent;
+-	struct clk *other_ldb_di_sel = NULL;
++        struct clk *other_ldb_di_sel = NULL;
+ 	struct bus_mux bus_mux;
+ 	int ret = 0, id = 0, chno, other_chno;
+ 	unsigned long serial_clk;
+@@ -667,6 +667,33 @@ static bool is_valid_crtc(struct ldb_data *ldb, enum crtc crtc,
+ 	return false;
+ }
+ 
++extern char *saved_command_line;
++
++#define ERR_NO_LVDS_PANEL -1
++
++/*
++ * WinSystems, Inc.
++ * Add the ability to select display from gpio jumper
++ *
++ * use params:
++ *   lvds_panel=0 800x480
++ *   lvds_panel=1 800x600
++ *
++ */
++static int get_ldb_timing(void)
++{
++    char *x, *s = saved_command_line;
++    static char buff[16];
++
++    sprintf(buff, "lvds_panel=");
++
++    if ((x =strstr(s, buff)) != NULL) {
++        return(x[11]-0x30);
++    }
++
++    return ERR_NO_LVDS_PANEL;
++}
++
+ static int ldb_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -677,7 +704,7 @@ static int ldb_probe(struct platform_device *pdev)
+ 	struct device_node *np = dev->of_node, *child;
+ 	struct ldb_data *ldb;
+ 	bool ext_ref;
+-	int i, data_width, mapping, child_count = 0;
++	int i, data_width, mapping, child_count = 0, panel_idx;
+ 	char clkname[16];
+ 
+ 	ldb = devm_kzalloc(dev, sizeof(*ldb), GFP_KERNEL);
+@@ -815,7 +842,10 @@ static int ldb_probe(struct platform_device *pdev)
+ 			return -EINVAL;
+ 		}
+ 
+-		ret = of_get_videomode(child, &chan->vm, 0);
++                panel_idx = get_ldb_timing();
++		ret = of_get_videomode(child, &chan->vm,
++                    (panel_idx != ERR_NO_LVDS_PANEL) ?
++                     panel_idx : 0);
+ 		if (ret)
+ 			return -EINVAL;
+ 
+-- 
+1.9.1
+
